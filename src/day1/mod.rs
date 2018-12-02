@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 #[derive(Debug, PartialEq)]
 pub enum Error {
     MissingSign,
@@ -12,13 +14,32 @@ impl From<std::num::ParseIntError> for Error {
 }
 
 pub fn sum_lines(input: impl AsRef<str>) -> Result<i64, Error> {
-    let numbers: Result<Vec<i64>, Error> = input
+    Ok(parse_lines(input)?.into_iter().sum())
+}
+
+pub fn find_repeat(input: impl AsRef<str>) -> Result<i64, Error> {
+    let numbers = parse_lines(input)?;
+    let mut seen = HashSet::new();
+    let mut frequency = 0;
+    seen.insert(0);
+
+    loop {
+        for num in &numbers {
+            frequency = frequency + num;
+            if seen.contains(&frequency) {
+                return Ok(frequency);
+            }
+            seen.insert(frequency);
+        }
+    }
+}
+
+fn parse_lines(input: impl AsRef<str>) -> Result<Vec<i64>, Error> {
+    input
         .as_ref()
         .lines()
         .map(|s| parse_line(s))
-        .collect();
-    
-    Ok(numbers?.into_iter().sum())
+        .collect()
 }
 
 fn parse_line(line: &str) -> Result<i64, Error> {
@@ -56,6 +77,14 @@ mod tests {
         assert_eq!(sum_lines("+1\n+1\n+1"), Ok(3));
         assert_eq!(sum_lines("+1\n+1\n-2"), Ok(0));
         assert_eq!(sum_lines("-1\n-2\n-3"), Ok(-6));
+    }
+
+    #[test]
+    fn test_find_repeat() {
+        assert_eq!(find_repeat("+1\n-1"), Ok(0));
+        assert_eq!(find_repeat("+3\n+3\n+4\n-2\n-4"), Ok(10));
+        assert_eq!(find_repeat("-6\n+3\n+8\n+5\n-6"), Ok(5));
+        assert_eq!(find_repeat("+7\n+7\n-2\n-7\n-4"), Ok(14));
     }
 }
 
