@@ -85,6 +85,42 @@ fn parse_line(line: &str) -> Checksum {
     checksum
 }
 
+pub fn find_similar_ids(lines: impl AsRef<str>) -> Option<String> {
+    for id_a in lines.as_ref().lines() {
+        for id_b in lines.as_ref().lines() {
+            match get_similar(id_a, id_b) {
+                Some(similar) => return Some(similar),
+                None => (),
+            }
+        }
+    }
+    None
+}
+
+// Checks if the strings are similar apart from one character, if yes, returns a string
+// containing the common characters.
+fn get_similar(id_a: &str, id_b: &str) -> Option<String> {
+    if id_a.len() != id_b.len() {
+        return None;
+    }
+
+    let mut found_diff = false;
+    let mut similar = String::with_capacity(id_a.len());
+
+    for (a, b) in id_a.chars().zip(id_b.chars()) {
+        match a == b {
+            true => similar.push(a),
+            false if found_diff => return None,
+            false => found_diff = true,
+        }
+    }
+
+    match id_a.len() == similar.len() {
+        true => None,
+        false => Some(similar),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -110,6 +146,25 @@ aabcdd
 abcdee
 ababab";
         assert_eq!(calculate_checksum(lines), 12);
+    }
+
+    #[test]
+    fn test_get_similar() {
+        assert_eq!(get_similar("a", ""), None);
+        assert_eq!(get_similar("a", "a"), None);
+        assert_eq!(get_similar("abcde", "axcye"), None);
+        assert_eq!(get_similar("fghij", "fguij"), Some("fgij".to_string()));
+    }
+
+    #[test]
+    fn test_find_similar_ids() {
+        assert_eq!(find_similar_ids("abcde
+fghij
+klmno
+pqrst
+fguij
+axcye
+wvxyz"), Some("fgij".to_string()));
     }
 }
 
