@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::ops::Add;
 
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[derive(Debug, PartialEq)]
 struct Checksum {
     two: i64,
     three: i64,
