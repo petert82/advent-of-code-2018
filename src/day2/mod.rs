@@ -53,6 +53,7 @@ impl Add for Checksum {
     }
 }
 
+// Entry point for day 1, part 1
 pub fn calculate_checksum(lines: impl AsRef<str>) -> i64 {
     lines
         .as_ref()
@@ -85,6 +86,7 @@ fn parse_line(line: &str) -> Checksum {
     checksum
 }
 
+// Entry point for day 2, part 2
 pub fn find_similar_ids(lines: impl AsRef<str>) -> Option<String> {
     for id_a in lines.as_ref().lines() {
         for id_b in lines.as_ref().lines() {
