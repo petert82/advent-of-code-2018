@@ -1,4 +1,5 @@
 use regex::Regex;
+use std::collections::HashMap;
 
 #[derive(Debug, PartialEq, Eq)]
 struct Claim {
@@ -8,6 +9,9 @@ struct Claim {
     width: u32,
     height: u32,
 }
+
+#[derive(Debug, PartialEq, Eq, Hash)]
+struct Coord(u32, u32);
 
 impl Claim {
     /// Parses a string of the form shown here into a Claim.
@@ -37,6 +41,45 @@ impl Claim {
             }),
         }
     }
+
+    fn cells(&self) -> Vec<Coord> {
+        let mut cells = Vec::with_capacity((self.width * self.height) as usize);
+
+        for y in self.y .. self.y + self.height {
+            for x in self.x .. self.x + self.width {
+                cells.push(Coord(x, y));
+            }
+        }
+
+        cells
+    }
+}
+
+/// Counts how many square inches of fabric are used by more than one claim.
+pub fn count_overlapping_inches(lines: impl AsRef<str>) -> u32 {
+    let coord_vecs = lines
+        .as_ref()
+        .lines()
+        .map(|line| Claim::parse(line))
+        .filter(Option::is_some)
+        .map(|claim| claim.unwrap().cells());
+    let mut coords = HashMap::new();
+    
+
+    for vec in coord_vecs {
+        for coord in vec {
+            let count = coords.entry(coord).or_insert(0);
+            *count += 1;
+        }
+    }
+
+    let mut count = 0;
+    for (_coord, coord_count) in coords {
+        if coord_count > 1 {
+            count += 1;
+        }
+    }
+    count
 }
 
 #[cfg(test)]
@@ -57,6 +100,14 @@ mod tests {
         assert_eq!(Claim::parse("#4 @ 5,5: 2x5"), Some(Claim{id: 4, x: 5, y: 5, width: 2, height: 5}));
         assert_eq!(Claim::parse("#4  @  5,5:  2x5"), Some(Claim{id: 4, x: 5, y: 5, width: 2, height: 5}));
         assert_eq!(Claim::parse("#4@5,5:2x5"), Some(Claim{id: 4, x: 5, y: 5, width: 2, height: 5}));
+    }
+
+    #[test]
+    fn test_count_overlapping_inches() {
+        let lines = "#1 @ 1,3: 4x4
+#2 @ 3,1: 4x4
+#3 @ 5,5: 2x2";
+        assert_eq!(count_overlapping_inches(lines), 4);
     }
 }
 
