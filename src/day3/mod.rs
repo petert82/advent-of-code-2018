@@ -53,6 +53,60 @@ impl Claim {
 
         cells
     }
+
+    fn cells_iter(&self) -> ClaimCoords {
+        ClaimCoords::new(self)
+    }
+}
+
+#[derive(Debug)]
+struct ClaimCoords {
+    first: bool,
+    curr_x: u32,
+    curr_y: u32,
+    orig_x: u32,
+    orig_y: u32,
+    max_x: u32,
+    max_y: u32,
+}
+
+impl ClaimCoords {
+    fn new(claim: &Claim) -> ClaimCoords {
+        ClaimCoords {
+            first: true,
+            curr_x: claim.x,
+            curr_y: claim.y,
+            orig_x: claim.x,
+            orig_y: claim.y,
+            max_x: claim.x + claim.width,
+            max_y: claim.y + claim.height,
+        }
+    } 
+}
+
+impl Iterator for ClaimCoords {
+    type Item = Coord;
+
+    fn next(&mut self) -> Option<Coord> {
+        let next_x = self.curr_x + 1;
+        let next_y = self.curr_y + 1;
+
+        if self.first && self.max_x > self.curr_x && self.max_y > self.curr_y {
+            self.first = false;
+            return Some(Coord(self.curr_x, self.curr_y));
+        }
+
+        if next_x < self.max_x {
+            self.curr_x = next_x;
+            return Some(Coord(self.curr_x, self.curr_y))
+        } else if next_y < self.max_y {
+            self.curr_x = self.orig_x;
+            self.curr_y = next_y;
+            return Some(Coord(self.curr_x, self.curr_y))
+        } else {
+            return None
+        }
+    }
 }
 
 /// Counts how many square inches of fabric are used by more than one claim.
@@ -65,7 +119,6 @@ pub fn count_overlapping_inches(lines: impl AsRef<str>) -> u32 {
         .map(|claim| claim.unwrap().cells());
     let mut coords = HashMap::new();
     
-
     for vec in coord_vecs {
         for coord in vec {
             let count = coords.entry(coord).or_insert(0);
@@ -100,6 +153,31 @@ mod tests {
         assert_eq!(Claim::parse("#4 @ 5,5: 2x5"), Some(Claim{id: 4, x: 5, y: 5, width: 2, height: 5}));
         assert_eq!(Claim::parse("#4  @  5,5:  2x5"), Some(Claim{id: 4, x: 5, y: 5, width: 2, height: 5}));
         assert_eq!(Claim::parse("#4@5,5:2x5"), Some(Claim{id: 4, x: 5, y: 5, width: 2, height: 5}));
+    }
+
+    #[test]
+    fn test_claim_coords_iterator() {
+        // (0, 0) (1, 0) (2, 0)
+        // (0, 1) (1, 1) (2, 1)
+        let mut claim_coords = ClaimCoords::new(&Claim{id: 0, x: 5, y: 5, width: 2, height: 2});
+        assert_eq!(claim_coords.next(), Some(Coord(5, 5)));
+        assert_eq!(claim_coords.next(), Some(Coord(6, 5)));
+        assert_eq!(claim_coords.next(), Some(Coord(5, 6)));
+        assert_eq!(claim_coords.next(), Some(Coord(6, 6)));
+        assert_eq!(claim_coords.next(), None);
+
+        let mut claim_coords = ClaimCoords::new(&Claim{id: 1, x: 1, y: 2, width: 0, height: 0});
+        assert_eq!(claim_coords.next(), None);
+
+        let mut claim_coords = ClaimCoords::new(&Claim{id: 1, x: 1, y: 2, width: 1, height: 0});
+        assert_eq!(claim_coords.next(), None);
+
+        let mut claim_coords = ClaimCoords::new(&Claim{id: 1, x: 1, y: 2, width: 0, height: 1});
+        assert_eq!(claim_coords.next(), None);
+
+        let mut claim_coords = ClaimCoords::new(&Claim{id: 1, x: 1, y: 2, width: 1, height: 1});
+        assert_eq!(claim_coords.next(), Some(Coord(1, 2)));
+        assert_eq!(claim_coords.next(), None);
     }
 
     #[test]
