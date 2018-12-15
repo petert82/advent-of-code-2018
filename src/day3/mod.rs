@@ -1,5 +1,5 @@
+use fnv::FnvHashMap;
 use regex::Regex;
-use std::collections::HashMap;
 use std::time::Instant;
 
 #[derive(Debug, PartialEq, Eq)]
@@ -108,13 +108,14 @@ pub fn count_overlapping_inches(lines: impl AsRef<str>) -> u32 {
         .filter(Option::is_some)
         .map(|claim| claim.unwrap());
     println!("Parsing took {:?}", now.elapsed());
-    let mut coords = HashMap::new();
+
+    // Cheating a bit since we shouldn't really know the capacity beforehand
+    let mut coords = FnvHashMap::with_capacity_and_hasher(351_836, Default::default());
     
     let now = Instant::now();
     for claim in claims {
         for coord in claim.cells_iter() {
-            let count = coords.entry(coord).or_insert(0);
-            *count += 1;
+            *coords.entry(coord).or_insert(0) += 1;
         }
     }
     println!("Building map took {:?}", now.elapsed());
