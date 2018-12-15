@@ -43,13 +43,13 @@ impl Claim {
         }
     }
 
-    fn cells_iter(&self) -> ClaimCoords {
-        ClaimCoords::new(self)
+    fn cells_iter(&self) -> ClaimCells {
+        ClaimCells::new(self)
     }
 }
 
 #[derive(Debug)]
-struct ClaimCoords {
+struct ClaimCells {
     first: bool,
     curr_x: u32,
     curr_y: u32,
@@ -59,9 +59,9 @@ struct ClaimCoords {
     max_y: u32,
 }
 
-impl ClaimCoords {
-    fn new(claim: &Claim) -> ClaimCoords {
-        ClaimCoords {
+impl ClaimCells {
+    fn new(claim: &Claim) -> ClaimCells {
+        ClaimCells {
             first: true,
             curr_x: claim.x,
             curr_y: claim.y,
@@ -73,7 +73,7 @@ impl ClaimCoords {
     }
 }
 
-impl Iterator for ClaimCoords {
+impl Iterator for ClaimCells {
     type Item = Coord;
 
     fn next(&mut self) -> Option<Coord> {
@@ -155,23 +155,23 @@ mod tests {
     fn test_claim_coords_iterator() {
         // (0, 0) (1, 0) (2, 0)
         // (0, 1) (1, 1) (2, 1)
-        let mut claim_coords = ClaimCoords::new(&Claim{id: 0, x: 5, y: 5, width: 2, height: 2});
+        let mut claim_coords = ClaimCells::new(&Claim{id: 0, x: 5, y: 5, width: 2, height: 2});
         assert_eq!(claim_coords.next(), Some(Coord(5, 5)));
         assert_eq!(claim_coords.next(), Some(Coord(6, 5)));
         assert_eq!(claim_coords.next(), Some(Coord(5, 6)));
         assert_eq!(claim_coords.next(), Some(Coord(6, 6)));
         assert_eq!(claim_coords.next(), None);
 
-        let mut claim_coords = ClaimCoords::new(&Claim{id: 1, x: 1, y: 2, width: 0, height: 0});
+        let mut claim_coords = ClaimCells::new(&Claim{id: 1, x: 1, y: 2, width: 0, height: 0});
         assert_eq!(claim_coords.next(), None);
 
-        let mut claim_coords = ClaimCoords::new(&Claim{id: 1, x: 1, y: 2, width: 1, height: 0});
+        let mut claim_coords = ClaimCells::new(&Claim{id: 1, x: 1, y: 2, width: 1, height: 0});
         assert_eq!(claim_coords.next(), None);
 
-        let mut claim_coords = ClaimCoords::new(&Claim{id: 1, x: 1, y: 2, width: 0, height: 1});
+        let mut claim_coords = ClaimCells::new(&Claim{id: 1, x: 1, y: 2, width: 0, height: 1});
         assert_eq!(claim_coords.next(), None);
 
-        let mut claim_coords = ClaimCoords::new(&Claim{id: 1, x: 1, y: 2, width: 1, height: 1});
+        let mut claim_coords = ClaimCells::new(&Claim{id: 1, x: 1, y: 2, width: 1, height: 1});
         assert_eq!(claim_coords.next(), Some(Coord(1, 2)));
         assert_eq!(claim_coords.next(), None);
     }
