@@ -1,6 +1,6 @@
 use fnv::FnvHashMap;
+use fnv::FnvHashSet;
 use regex::Regex;
-use std::time::Instant;
 
 #[derive(Debug, PartialEq, Eq)]
 struct Claim {
@@ -98,37 +98,63 @@ impl Iterator for ClaimCells {
     }
 }
 
-/// Counts how many square inches of fabric are used by more than one claim.
-pub fn count_overlapping_inches(lines: impl AsRef<str>) -> u32 {
-    let now = Instant::now();
-    let claims = lines
-        .as_ref()
+fn get_claims<'a>(lines: &'a str) -> impl Iterator<Item = Claim> + 'a {
+    lines
         .lines()
         .map(|line| Claim::parse(line))
         .filter(Option::is_some)
-        .map(|claim| claim.unwrap());
-    println!("Parsing took {:?}", now.elapsed());
+        .map(|claim| claim.unwrap())
+}
 
+/// Counts how many square inches of fabric are used by more than one claim.
+pub fn count_overlapping_inches(lines: impl AsRef<str>) -> u32 {
     // Cheating a bit since we shouldn't really know the capacity beforehand
-    let mut coords = FnvHashMap::with_capacity_and_hasher(351_836, Default::default());
+    let mut coord_counts = FnvHashMap::with_capacity_and_hasher(351_836, Default::default());
     
-    let now = Instant::now();
-    for claim in claims {
+    for claim in get_claims(lines.as_ref()) {
         for coord in claim.cells_iter() {
-            *coords.entry(coord).or_insert(0) += 1;
+            *coord_counts.entry(coord).or_insert(0) += 1;
         }
     }
-    println!("Building map took {:?}", now.elapsed());
 
-    let now = Instant::now();
     let mut count = 0;
-    for (_coord, coord_count) in coords {
+    for (_coord, coord_count) in coord_counts {
         if coord_count > 1 {
             count += 1;
         }
     }
-    println!("Counting map entries took {:?}", now.elapsed());
     count
+}
+
+/// Finds the ID of the claim that doesn't overlap any other claims.
+pub fn find_intact_claim(lines: impl AsRef<str>) -> Option<u32> {
+    let mut ids_by_coord = FnvHashMap::default();
+    let mut all_ids = FnvHashSet::default();
+
+    for claim in get_claims(lines.as_ref()) {
+        all_ids.insert(claim.id);
+        for coord in claim.cells_iter() {
+            let ids = ids_by_coord.entry(coord).or_insert(Vec::new());
+            ids.push(claim.id);
+        }
+    }
+
+    for (_coord, ids) in ids_by_coord {
+        if ids.len() > 1 {
+            for id in ids {
+                all_ids.remove(&id);
+            }
+        }
+    }
+
+    if all_ids.len() != 1 {
+        return None;
+    }
+
+    for id in all_ids {
+        return Some(id)
+    }
+    unreachable!()
 }
 
 #[cfg(test)]
@@ -182,6 +208,18 @@ mod tests {
 #2 @ 3,1: 4x4
 #3 @ 5,5: 2x2";
         assert_eq!(count_overlapping_inches(lines), 4);
+    }
+
+    #[test]
+    fn test_find_intact_claim() {
+        let good_lines = "#1 @ 1,3: 4x4
+#2 @ 3,1: 4x4
+#3 @ 5,5: 2x2";
+        assert_eq!(find_intact_claim(good_lines), Some(3));
+
+        let bad_lines = "#1 @ 1,3: 4x4
+#2 @ 3,1: 4x4";
+        assert_eq!(find_intact_claim(bad_lines), None);
     }
 }
 
