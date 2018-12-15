@@ -1,5 +1,6 @@
 use regex::Regex;
 use std::collections::HashMap;
+use std::time::Instant;
 
 #[derive(Debug, PartialEq, Eq)]
 struct Claim {
@@ -42,18 +43,6 @@ impl Claim {
         }
     }
 
-    fn cells(&self) -> Vec<Coord> {
-        let mut cells = Vec::with_capacity((self.width * self.height) as usize);
-
-        for y in self.y .. self.y + self.height {
-            for x in self.x .. self.x + self.width {
-                cells.push(Coord(x, y));
-            }
-        }
-
-        cells
-    }
-
     fn cells_iter(&self) -> ClaimCoords {
         ClaimCoords::new(self)
     }
@@ -81,7 +70,7 @@ impl ClaimCoords {
             max_x: claim.x + claim.width,
             max_y: claim.y + claim.height,
         }
-    } 
+    }
 }
 
 impl Iterator for ClaimCoords {
@@ -111,27 +100,33 @@ impl Iterator for ClaimCoords {
 
 /// Counts how many square inches of fabric are used by more than one claim.
 pub fn count_overlapping_inches(lines: impl AsRef<str>) -> u32 {
-    let coord_vecs = lines
+    let now = Instant::now();
+    let claims = lines
         .as_ref()
         .lines()
         .map(|line| Claim::parse(line))
         .filter(Option::is_some)
-        .map(|claim| claim.unwrap().cells());
+        .map(|claim| claim.unwrap());
+    println!("Parsing took {:?}", now.elapsed());
     let mut coords = HashMap::new();
     
-    for vec in coord_vecs {
-        for coord in vec {
+    let now = Instant::now();
+    for claim in claims {
+        for coord in claim.cells_iter() {
             let count = coords.entry(coord).or_insert(0);
             *count += 1;
         }
     }
+    println!("Building map took {:?}", now.elapsed());
 
+    let now = Instant::now();
     let mut count = 0;
     for (_coord, coord_count) in coords {
         if coord_count > 1 {
             count += 1;
         }
     }
+    println!("Counting map entries took {:?}", now.elapsed());
     count
 }
 
