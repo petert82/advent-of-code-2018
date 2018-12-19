@@ -13,10 +13,14 @@ impl From<std::num::ParseIntError> for Error {
     }
 }
 
+/// Sums all of the frequency changes from the input lines.
 pub fn sum_lines(input: impl AsRef<str>) -> Result<i64, Error> {
     Ok(parse_lines(input)?.into_iter().sum())
 }
 
+/// Finds the first output frequency that is reached *twice* when
+/// applying the given frequency changes in order (looping the list
+/// multiple times if necessary).
 pub fn find_repeat(input: impl AsRef<str>) -> Result<i64, Error> {
     let numbers = parse_lines(input)?;
     let mut seen = HashSet::new();
