@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use fnv::FnvHashSet;
 
 #[derive(Debug, PartialEq)]
 pub enum Error {
@@ -23,7 +23,7 @@ pub fn sum_lines(input: impl AsRef<str>) -> Result<i64, Error> {
 /// multiple times if necessary).
 pub fn find_repeat(input: impl AsRef<str>) -> Result<i64, Error> {
     let numbers = parse_lines(input)?;
-    let mut seen = HashSet::new();
+    let mut seen = FnvHashSet::default();
     let mut frequency = 0;
     seen.insert(0);
 
