@@ -1,5 +1,3 @@
-extern crate aoc2018;
-
 use aoc2018::day3::find_intact_claim;
 use aoc2018::day3::get_input;
 use std::time::Instant;

@@ -1,5 +1,3 @@
-extern crate aoc2018;
-
 use aoc2018::day1::get_input;
 use aoc2018::day1::sum_lines;
 use aoc2018::day1::Error;

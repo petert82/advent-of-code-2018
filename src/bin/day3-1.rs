@@ -1,5 +1,3 @@
-extern crate aoc2018;
-
 use aoc2018::day3::count_overlapping_inches;
 use aoc2018::day3::get_input;
 use std::time::Instant;

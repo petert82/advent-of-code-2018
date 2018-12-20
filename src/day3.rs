@@ -1,5 +1,6 @@
 use fnv::FnvHashMap;
 use fnv::FnvHashSet;
+use lazy_static::lazy_static;
 use regex::Regex;
 
 #[derive(Debug, PartialEq, Eq)]
