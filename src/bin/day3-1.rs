@@ -8,5 +8,9 @@ fn main() {
     let start = Instant::now();
     let count = count_overlapping_inches(get_input());
 
-    println!("There are {} inches in overlapping claims (Took {:?})", count, start.elapsed());
+    println!(
+        "There are {} inches in overlapping claims (Took {:?})",
+        count,
+        start.elapsed()
+    );
 }

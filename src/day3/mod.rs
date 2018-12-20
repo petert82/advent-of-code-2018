@@ -16,29 +16,56 @@ struct Coord(u32, u32);
 
 impl Claim {
     /// Parses a string of the form shown here into a Claim.
-    /// 
+    ///
     /// `#1 @ 1,3: 4x4`
     /// `#2 @ 3,1: 4x4`
     /// `#3 @ 5,5: 2x2`
     /// let re = Regex::new(r"^\d{4}-\d{2}-\d{2}$").unwrap();
     fn parse(input: impl AsRef<str>) -> Option<Claim> {
         lazy_static! {
-            static ref RE: Regex = Regex::new(r"(?x)
+            static ref RE: Regex = Regex::new(
+                r"(?x)
             ^\#(?P<id>\d+)\s*
             @\s*
             (?P<x>\d+),(?P<y>\d+)\s*
             :\s*
-            (?P<w>\d+)x(?P<h>\d+)$")
-                .expect("Regex compilation failed");
+            (?P<w>\d+)x(?P<h>\d+)$"
+            )
+            .expect("Regex compilation failed");
         }
         match RE.captures(input.as_ref()) {
             None => None,
-            Some(caps) => Some(Claim{
-                id: caps.name("id").unwrap().as_str().parse().expect("Couldn't parse id"),
-                x: caps.name("x").unwrap().as_str().parse().expect("Couldn't parse x"),
-                y: caps.name("y").unwrap().as_str().parse().expect("Couldn't parse y"),
-                width: caps.name("w").unwrap().as_str().parse().expect("Couldn't parse width"),
-                height: caps.name("h").unwrap().as_str().parse().expect("Couldn't parse height"),
+            Some(caps) => Some(Claim {
+                id: caps
+                    .name("id")
+                    .unwrap()
+                    .as_str()
+                    .parse()
+                    .expect("Couldn't parse id"),
+                x: caps
+                    .name("x")
+                    .unwrap()
+                    .as_str()
+                    .parse()
+                    .expect("Couldn't parse x"),
+                y: caps
+                    .name("y")
+                    .unwrap()
+                    .as_str()
+                    .parse()
+                    .expect("Couldn't parse y"),
+                width: caps
+                    .name("w")
+                    .unwrap()
+                    .as_str()
+                    .parse()
+                    .expect("Couldn't parse width"),
+                height: caps
+                    .name("h")
+                    .unwrap()
+                    .as_str()
+                    .parse()
+                    .expect("Couldn't parse height"),
             }),
         }
     }
@@ -110,7 +137,7 @@ fn get_claims<'a>(lines: &'a str) -> impl Iterator<Item = Claim> + 'a {
 pub fn count_overlapping_inches(lines: impl AsRef<str>) -> u32 {
     // Cheating a bit since we shouldn't really know the capacity beforehand
     let mut coord_counts = FnvHashMap::with_capacity_and_hasher(351_836, Default::default());
-    
+
     for claim in get_claims(lines.as_ref()) {
         for coord in claim.cells_iter() {
             *coord_counts.entry(coord).or_insert(0) += 1;
@@ -169,35 +196,119 @@ mod tests {
         assert_eq!(Claim::parse("#1 @ 1,"), None);
         assert_eq!(Claim::parse("#1 @"), None);
         assert_eq!(Claim::parse("#1"), None);
-        assert_eq!(Claim::parse("#1 @ 1,3: 4x4"), Some(Claim{id: 1, x: 1, y: 3, width: 4, height: 4}));
-        assert_eq!(Claim::parse("#2 @ 3,1: 4x4"), Some(Claim{id: 2, x: 3, y: 1, width: 4, height: 4}));
-        assert_eq!(Claim::parse("#3 @ 5,5: 2x2"), Some(Claim{id: 3, x: 5, y: 5, width: 2, height: 2}));
-        assert_eq!(Claim::parse("#4 @ 5,5: 2x5"), Some(Claim{id: 4, x: 5, y: 5, width: 2, height: 5}));
-        assert_eq!(Claim::parse("#4  @  5,5:  2x5"), Some(Claim{id: 4, x: 5, y: 5, width: 2, height: 5}));
-        assert_eq!(Claim::parse("#4@5,5:2x5"), Some(Claim{id: 4, x: 5, y: 5, width: 2, height: 5}));
+        assert_eq!(
+            Claim::parse("#1 @ 1,3: 4x4"),
+            Some(Claim {
+                id: 1,
+                x: 1,
+                y: 3,
+                width: 4,
+                height: 4
+            })
+        );
+        assert_eq!(
+            Claim::parse("#2 @ 3,1: 4x4"),
+            Some(Claim {
+                id: 2,
+                x: 3,
+                y: 1,
+                width: 4,
+                height: 4
+            })
+        );
+        assert_eq!(
+            Claim::parse("#3 @ 5,5: 2x2"),
+            Some(Claim {
+                id: 3,
+                x: 5,
+                y: 5,
+                width: 2,
+                height: 2
+            })
+        );
+        assert_eq!(
+            Claim::parse("#4 @ 5,5: 2x5"),
+            Some(Claim {
+                id: 4,
+                x: 5,
+                y: 5,
+                width: 2,
+                height: 5
+            })
+        );
+        assert_eq!(
+            Claim::parse("#4  @  5,5:  2x5"),
+            Some(Claim {
+                id: 4,
+                x: 5,
+                y: 5,
+                width: 2,
+                height: 5
+            })
+        );
+        assert_eq!(
+            Claim::parse("#4@5,5:2x5"),
+            Some(Claim {
+                id: 4,
+                x: 5,
+                y: 5,
+                width: 2,
+                height: 5
+            })
+        );
     }
 
     #[test]
     fn test_claim_coords_iterator() {
         // (0, 0) (1, 0) (2, 0)
         // (0, 1) (1, 1) (2, 1)
-        let mut claim_coords = ClaimCells::new(&Claim{id: 0, x: 5, y: 5, width: 2, height: 2});
+        let mut claim_coords = ClaimCells::new(&Claim {
+            id: 0,
+            x: 5,
+            y: 5,
+            width: 2,
+            height: 2,
+        });
         assert_eq!(claim_coords.next(), Some(Coord(5, 5)));
         assert_eq!(claim_coords.next(), Some(Coord(6, 5)));
         assert_eq!(claim_coords.next(), Some(Coord(5, 6)));
         assert_eq!(claim_coords.next(), Some(Coord(6, 6)));
         assert_eq!(claim_coords.next(), None);
 
-        let mut claim_coords = ClaimCells::new(&Claim{id: 1, x: 1, y: 2, width: 0, height: 0});
+        let mut claim_coords = ClaimCells::new(&Claim {
+            id: 1,
+            x: 1,
+            y: 2,
+            width: 0,
+            height: 0,
+        });
         assert_eq!(claim_coords.next(), None);
 
-        let mut claim_coords = ClaimCells::new(&Claim{id: 1, x: 1, y: 2, width: 1, height: 0});
+        let mut claim_coords = ClaimCells::new(&Claim {
+            id: 1,
+            x: 1,
+            y: 2,
+            width: 1,
+            height: 0,
+        });
         assert_eq!(claim_coords.next(), None);
 
-        let mut claim_coords = ClaimCells::new(&Claim{id: 1, x: 1, y: 2, width: 0, height: 1});
+        let mut claim_coords = ClaimCells::new(&Claim {
+            id: 1,
+            x: 1,
+            y: 2,
+            width: 0,
+            height: 1,
+        });
         assert_eq!(claim_coords.next(), None);
 
-        let mut claim_coords = ClaimCells::new(&Claim{id: 1, x: 1, y: 2, width: 1, height: 1});
+        let mut claim_coords = ClaimCells::new(&Claim {
+            id: 1,
+            x: 1,
+            y: 2,
+            width: 1,
+            height: 1,
+        });
         assert_eq!(claim_coords.next(), Some(Coord(1, 2)));
         assert_eq!(claim_coords.next(), None);
     }

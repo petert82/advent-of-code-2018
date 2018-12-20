@@ -39,11 +39,7 @@ pub fn find_repeat(input: impl AsRef<str>) -> Result<i64, Error> {
 }
 
 fn parse_lines(input: impl AsRef<str>) -> Result<Vec<i64>, Error> {
-    input
-        .as_ref()
-        .lines()
-        .map(|s| parse_line(s))
-        .collect()
+    input.as_ref().lines().map(|s| parse_line(s)).collect()
 }
 
 fn parse_line(line: &str) -> Result<i64, Error> {

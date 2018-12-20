@@ -6,5 +6,9 @@ use std::time::Instant;
 
 fn main() {
     let start = Instant::now();
-    println!("The checksum is {} (Took {:?})", calculate_checksum(get_input()), start.elapsed());
+    println!(
+        "The checksum is {} (Took {:?})",
+        calculate_checksum(get_input()),
+        start.elapsed()
+    );
 }

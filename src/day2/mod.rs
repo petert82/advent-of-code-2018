@@ -9,10 +9,7 @@ struct Checksum {
 
 impl Checksum {
     fn new() -> Checksum {
-        Checksum {
-            two: 0,
-            three: 0,
-        }
+        Checksum { two: 0, three: 0 }
     }
 
     fn set_two(mut self) -> Checksum {
@@ -74,7 +71,7 @@ fn parse_line(line: &str) -> Checksum {
         checksum = match count {
             2 => checksum.set_two(),
             3 => checksum.set_three(),
-            _ => checksum
+            _ => checksum,
         };
         if checksum.has_two_and_three() {
             break;
@@ -89,7 +86,7 @@ pub fn find_similar_ids(lines: impl AsRef<str>) -> Option<String> {
     for id_a in lines.as_ref().lines() {
         for id_b in lines.as_ref().lines() {
             if let Some(similar) = get_similar(id_a, id_b) {
-                return Some(similar)
+                return Some(similar);
             }
         }
     }
@@ -110,7 +107,7 @@ fn get_similar(id_a: &str, id_b: &str) -> Option<String> {
         if a == b {
             similar.push(a);
         } else if found_diff {
-            return None
+            return None;
         } else {
             found_diff = true;
         }
@@ -129,13 +126,13 @@ mod tests {
 
     #[test]
     fn test_parse_line() {
-        assert_eq!(parse_line("abcdef"), Checksum{two: 0, three: 0});
-        assert_eq!(parse_line("bababc"), Checksum{two: 1, three: 1});
-        assert_eq!(parse_line("abbcde"), Checksum{two: 1, three: 0});
-        assert_eq!(parse_line("abcccd"), Checksum{two: 0, three: 1});
-        assert_eq!(parse_line("aabcdd"), Checksum{two: 1, three: 0});
-        assert_eq!(parse_line("abcdee"), Checksum{two: 1, three: 0});
-        assert_eq!(parse_line("ababab"), Checksum{two: 0, three: 1});
+        assert_eq!(parse_line("abcdef"), Checksum { two: 0, three: 0 });
+        assert_eq!(parse_line("bababc"), Checksum { two: 1, three: 1 });
+        assert_eq!(parse_line("abbcde"), Checksum { two: 1, three: 0 });
+        assert_eq!(parse_line("abcccd"), Checksum { two: 0, three: 1 });
+        assert_eq!(parse_line("aabcdd"), Checksum { two: 1, three: 0 });
+        assert_eq!(parse_line("abcdee"), Checksum { two: 1, three: 0 });
+        assert_eq!(parse_line("ababab"), Checksum { two: 0, three: 1 });
     }
 
     #[test]
@@ -160,13 +157,18 @@ ababab";
 
     #[test]
     fn test_find_similar_ids() {
-        assert_eq!(find_similar_ids("abcde
+        assert_eq!(
+            find_similar_ids(
+                "abcde
 fghij
 klmno
 pqrst
 fguij
 axcye
-wvxyz"), Some("fgij".to_string()));
+wvxyz"
+            ),
+            Some("fgij".to_string())
+        );
     }
 }
 
