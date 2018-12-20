@@ -87,13 +87,13 @@ impl Iterator for ClaimCells {
 
         if next_x < self.max_x {
             self.curr_x = next_x;
-            return Some(Coord(self.curr_x, self.curr_y))
+            Some(Coord(self.curr_x, self.curr_y))
         } else if next_y < self.max_y {
             self.curr_x = self.orig_x;
             self.curr_y = next_y;
-            return Some(Coord(self.curr_x, self.curr_y))
+            Some(Coord(self.curr_x, self.curr_y))
         } else {
-            return None
+            None
         }
     }
 }
@@ -101,7 +101,7 @@ impl Iterator for ClaimCells {
 fn get_claims<'a>(lines: &'a str) -> impl Iterator<Item = Claim> + 'a {
     lines
         .lines()
-        .map(|line| Claim::parse(line))
+        .map(Claim::parse)
         .filter(Option::is_some)
         .map(|claim| claim.unwrap())
 }
@@ -134,7 +134,7 @@ pub fn find_intact_claim(lines: impl AsRef<str>) -> Option<u32> {
     for claim in get_claims(lines.as_ref()) {
         all_ids.insert(claim.id);
         for coord in claim.cells_iter() {
-            let ids = ids_by_coord.entry(coord).or_insert(Vec::new());
+            let ids = ids_by_coord.entry(coord).or_insert_with(Vec::new);
             ids.push(claim.id);
         }
     }
@@ -151,10 +151,10 @@ pub fn find_intact_claim(lines: impl AsRef<str>) -> Option<u32> {
         return None;
     }
 
-    for id in all_ids {
-        return Some(id)
+    match all_ids.iter().next() {
+        Some(id) => Some(*id),
+        None => None,
     }
-    unreachable!()
 }
 
 #[cfg(test)]

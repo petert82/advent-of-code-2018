@@ -29,7 +29,7 @@ pub fn find_repeat(input: impl AsRef<str>) -> Result<i64, Error> {
 
     loop {
         for num in &numbers {
-            frequency = frequency + num;
+            frequency += num;
             if seen.contains(&frequency) {
                 return Ok(frequency);
             }
@@ -56,7 +56,7 @@ fn parse_line(line: &str) -> Result<i64, Error> {
 
     match sign {
         "+" => Ok(num),
-        "-" => Ok(num * -1),
+        "-" => Ok(-num),
         _ => Err(Error::MissingSign),
     }
 }

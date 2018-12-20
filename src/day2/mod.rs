@@ -16,18 +16,16 @@ impl Checksum {
     }
 
     fn set_two(mut self) -> Checksum {
-        match self.two {
-            0 => self.two = 1,
-            _ => ()
+        if let 0 = self.two {
+            self.two = 1
         }
 
         self
     }
 
     fn set_three(mut self) -> Checksum {
-        match self.three {
-            0 => self.three = 1,
-            _ => ()
+        if let 0 = self.three {
+            self.three = 1
         }
 
         self
@@ -90,9 +88,8 @@ fn parse_line(line: &str) -> Checksum {
 pub fn find_similar_ids(lines: impl AsRef<str>) -> Option<String> {
     for id_a in lines.as_ref().lines() {
         for id_b in lines.as_ref().lines() {
-            match get_similar(id_a, id_b) {
-                Some(similar) => return Some(similar),
-                None => (),
+            if let Some(similar) = get_similar(id_a, id_b) {
+                return Some(similar)
             }
         }
     }
@@ -110,16 +107,19 @@ fn get_similar(id_a: &str, id_b: &str) -> Option<String> {
     let mut similar = String::with_capacity(id_a.len());
 
     for (a, b) in id_a.chars().zip(id_b.chars()) {
-        match a == b {
-            true => similar.push(a),
-            false if found_diff => return None,
-            false => found_diff = true,
+        if a == b {
+            similar.push(a);
+        } else if found_diff {
+            return None
+        } else {
+            found_diff = true;
         }
     }
 
-    match id_a.len() == similar.len() {
-        true => None,
-        false => Some(similar),
+    if id_a.len() == similar.len() {
+        None
+    } else {
+        Some(similar)
     }
 }
 
