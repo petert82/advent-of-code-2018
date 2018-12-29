@@ -27,15 +27,14 @@ pub fn find_repeat(input: impl AsRef<str>) -> Result<i64, Error> {
     let mut frequency = 0;
     seen.insert(0);
 
-    loop {
-        for num in &numbers {
-            frequency += num;
-            if seen.contains(&frequency) {
-                return Ok(frequency);
-            }
-            seen.insert(frequency);
+    for num in numbers.iter().cycle() {
+        frequency += num;
+        if seen.contains(&frequency) {
+            return Ok(frequency);
         }
+        seen.insert(frequency);
     }
+    unreachable!()
 }
 
 fn parse_lines(input: impl AsRef<str>) -> Result<Vec<i64>, Error> {
